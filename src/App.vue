@@ -89,6 +89,8 @@ export default {
     scaleX : null,
     scaleY : null,
     universeChange : null,
+    previousUniverse: null,
+    previousCluster: null,
     }
   },
   methods: {
@@ -114,8 +116,8 @@ export default {
   watch: {
 
     i(){
-      
-      d3.selectAll(this.childScatter)
+      console.log(d3.selectAll('.inboxCircle.presentCircle, .outboxCircle.presentCircle'))
+      d3.selectAll('.inboxCircle.presentCircle, .outboxCircle.presentCircle')
         .classed('inboxCircle', (d)=>{
           return !this.isBrushed(this.brushSelection, d.x, d.y)
         })
@@ -124,8 +126,8 @@ export default {
         })
         
       let istepGroup = []
-      for(let istep = 0; istep < d3.selectAll('.inboxCircle')._groups[0].length; istep ++){
-        istepGroup.push(d3.selectAll('.inboxCircle')._groups[0][istep].id[2])
+      for(let istep = 0; istep < d3.selectAll('.inboxCircle.presentCircle')._groups[0].length; istep ++){
+        istepGroup.push(d3.selectAll('.inboxCircle.presentCircle')._groups[0][istep].id[2])
         }
       
       let result = {}
@@ -133,47 +135,47 @@ export default {
         result[x] = (result[x] || 0)+1
       })
 
-      for(let bstep = 0; bstep<this.scatter._groups[0].length ; bstep++){
-        if (result[bstep] / d3.selectAll('#B'+bstep)._groups[0][0].children.length > 0.45){
-          d3.selectAll('#A' + bstep)
-            .attr('class', 'inbox')
-          d3.selectAll(d3.selectAll('#B' + bstep)._groups[0][0].children).attr('class', 'inboxCircle')
-        } else {
-          d3.selectAll('#A' + bstep)
-            .attr('class', 'outofBox')
-          d3.selectAll(d3.selectAll('#B' + bstep)._groups[0][0].children).attr('class', 'outboxCircle')
-        }
-      } //inbox 안에 있는 circle들 모두 inboxCircle
+      // for(let bstep = 0; bstep<this.scatter._groups[0].length ; bstep++){
+      //   if (result[bstep] / d3.selectAll('#B'+bstep)._groups[0][0].children.length > 0.45){
+      //     d3.selectAll('#A' + bstep)
+      //       .attr('class', 'inbox presentCircle')
+      //     d3.selectAll(d3.selectAll('#B' + bstep)._groups[0][0].children).attr('class', 'inboxCircle presentCircle')
+      //   } else {
+      //     d3.selectAll('#A' + bstep)
+      //       .attr('class', 'outofBox presentCircle')
+      //     d3.selectAll(d3.selectAll('#B' + bstep)._groups[0][0].children).attr('class', 'outboxCircle presentCircle')
+      //   }
+      // } //inbox 안에 있는 circle들 모두 inboxCircle
 
-      if(d3.selectAll('.inbox')._groups[0].length == 0){
-        let brushMx = (this.brushSelection[0][0] + this.brushSelection[1][0]) / 2
-        let brushMy = (this.brushSelection[0][1] + this.brushSelection[1][1]) / 2
-        let wholeXY = []
-        let disXY = []
-        for(let dstep = 0; dstep<this.scatter._groups[0].length; dstep++){
-          wholeXY[dstep]= [this.scatter._groups[0][dstep].cx.baseVal.value, this.scatter._groups[0][dstep].cy.baseVal.value]
-          disXY[dstep] = Math.pow(wholeXY[dstep][0] - brushMx, 2) + 
-                          Math.pow(wholeXY[dstep][1] - brushMy, 2)
-          }
-        d3.select('#'+this.scatter._groups[0][disXY.indexOf(Math.min(...disXY))].id)
-          .attr('class', 'inbox')
-        d3.selectAll(d3.selectAll('#B' + this.scatter._groups[0][disXY.indexOf(Math.min(...disXY))].id[1])._groups[0][0].children)
-          .attr('class', 'inboxCircle')
-      } // view안에 클러스터가 하나도 없을경우 뷰 중심점과 가장 가까운 클러스터로 이동
+      // if(d3.selectAll('.inbox.presentCircle')._groups[0].length == 0){
+      //   let brushMx = (this.brushSelection[0][0] + this.brushSelection[1][0]) / 2
+      //   let brushMy = (this.brushSelection[0][1] + this.brushSelection[1][1]) / 2
+      //   let wholeXY = []
+      //   let disXY = []
+      //   for(let dstep = 0; dstep<this.scatter._groups[0].length; dstep++){
+      //     wholeXY[dstep]= [this.scatter._groups[0][dstep].cx.baseVal.value, this.scatter._groups[0][dstep].cy.baseVal.value]
+      //     disXY[dstep] = Math.pow(wholeXY[dstep][0] - brushMx, 2) + 
+      //                     Math.pow(wholeXY[dstep][1] - brushMy, 2)
+      //     }
+      //   d3.select('#'+this.scatter._groups[0][disXY.indexOf(Math.min(...disXY))].id)
+      //     .attr('class', 'inbox presentCircle')
+      //   d3.selectAll(d3.selectAll('#B' + this.scatter._groups[0][disXY.indexOf(Math.min(...disXY))].id[1])._groups[0][0].children)
+      //     .attr('class', 'inboxCircle presentCircle')
+      // } // view안에 클러스터가 하나도 없을경우 뷰 중심점과 가장 가까운 클러스터로 이동
 
       //BD에 inbox 클래스 전송
       //최종 클러스터 넘버 받기 
 
-      let d3length = d3.selectAll('.inbox')._groups[0].length
+      let d3length = d3.selectAll('.inbox.presentCircle')._groups[0].length
       let eachCx1 = []
       let eachCx2 = []
       let eachCy1 = []
       let eachCy2 = []
       for(let step = 0; step < d3length; step++){
-        eachCx1.push(d3.selectAll('.inbox')._groups[0][step].cx.baseVal.value - d3.selectAll('.inbox')._groups[0][step].r.baseVal.value)
-        eachCx2.push(d3.selectAll('.inbox')._groups[0][step].cx.baseVal.value + d3.selectAll('.inbox')._groups[0][step].r.baseVal.value)
-        eachCy1.push(d3.selectAll('.inbox')._groups[0][step].cy.baseVal.value - d3.selectAll('.inbox')._groups[0][step].r.baseVal.value)
-        eachCy2.push(d3.selectAll('.inbox')._groups[0][step].cy.baseVal.value + d3.selectAll('.inbox')._groups[0][step].r.baseVal.value)
+        eachCx1.push(d3.selectAll('.inbox.presentCircle')._groups[0][step].cx.baseVal.value - d3.selectAll('.inbox.presentCircle')._groups[0][step].r.baseVal.value)
+        eachCx2.push(d3.selectAll('.inbox.presentCircle')._groups[0][step].cx.baseVal.value + d3.selectAll('.inbox.presentCircle')._groups[0][step].r.baseVal.value)
+        eachCy1.push(d3.selectAll('.inbox.presentCircle')._groups[0][step].cy.baseVal.value - d3.selectAll('.inbox.presentCircle')._groups[0][step].r.baseVal.value)
+        eachCy2.push(d3.selectAll('.inbox.presentCircle')._groups[0][step].cy.baseVal.value + d3.selectAll('.inbox.presentCircle')._groups[0][step].r.baseVal.value)
       }
       let selectedBBox = [[Math.min(...eachCx1), Math.min(...eachCy1)], [Math.max(...eachCx2), Math.max(...eachCy2)]]
       let bboxX1 = selectedBBox[0][0]
@@ -198,9 +200,9 @@ export default {
       console.log("보정")
     },
     clicki(){
-      let r = d3.selectAll('.inbox')._groups[0][0].r.baseVal.value
-      let dx = d3.selectAll('.inbox')._groups[0][0].cx.baseVal.value - r
-      let dy = d3.selectAll('.inbox')._groups[0][0].cy.baseVal.value - r
+      let r = d3.selectAll('.inbox.presentCircle')._groups[0][0].r.baseVal.value
+      let dx = d3.selectAll('.inbox.presentCircle')._groups[0][0].cx.baseVal.value - r
+      let dy = d3.selectAll('.inbox.presentCircle')._groups[0][0].cy.baseVal.value - r
       this.bFlag = false
       this.svgMap.call(
         this.zooms.transform,
@@ -253,25 +255,45 @@ export default {
 
     },
     universeChange(){
-      this.uFlag = true
+      // this.uFlag = true
       console.log('newUniverse')
       this.bFlag = false
       this.tFlag = false
-      d3.selectAll('.inbox').attr('class', 'outofBox')
       // outofBox cx, cy, r 데이터 저장
-      d3.selectAll('.outofBox').attr('fill-opacity', 0).attr('cx', 0).attr('cy', 0).attr('r', 0)
-      d3.selectAll('.outboxCircle').attr('fill-opacity', 0).attr('stroke-opacity', 0)
+      d3.selectAll('.outofBox').classed('previousCircle', true).classed('presentCircle', false)
+      d3.selectAll('.inbox').classed('previousCircle', true).classed('presentCircle', false)
+      d3.selectAll('.outboxCircle').classed('previousCircle', true).classed('presentCircle', false)
+      d3.selectAll('.inboxCircle').classed('previousCircle', true).classed('presentCircle', false)
       // 서버에 universe & data 전송 
       // 서버에 데이터 요청 
       // 다시 force simualtion // 
-      // tFlag = true, uFlag = false
-      // d3.selectAll('.outofBox').attr('fill-opacity', 1).attr('cx', ).attr('cy', ).attr('r', ) universe 탈출시 이전 값 다시 assign
+      this.inClustergCam = this.gCam.append('g')
+      this.inClustergCam
+        .selectAll('g')
+        .data(this.node)
+        .join('g')
+        .append('circle')
+        .attr('cx', (d)=>{
+          return d.x
+        })
+        .attr('cy', (d)=>{
+          return d.y
+        })
+        .attr('r', 10)
+        .attr('class', 'inbox presentCircle')
+        console.log(d3.selectAll('.inboxCircle.previousCircle'))
+      // d3.selectAll('.previousCircle').classed('previousCircle', false)
+      // this.uFlag = false
+      // this.tFlag = true
         
     },
     reCluster(){
       //서버에 데이터 요청
       //remove all circle
       //simualtion
+    },
+    previousUniverse(){
+      //
     }
   },
 
@@ -376,24 +398,24 @@ export default {
       .attr("r", (d,i)=>{
           return  this.parentNodes[i].children.length * 1.25
       })
-      .attr("class", 'inbox')
+      .attr("class", 'inbox presentCircle')
       .attr("id", (d,i)=>{
         return 'A' + this.parentNodes[i].children[0].data.group
       })
       .on('click', (event)=>{
-        if(d3.selectAll('.inbox')._groups[0].length == 2) {
+        if(d3.selectAll('.inbox.presentCircle')._groups[0].length == 2) {
           this.universeChange = this.universeChange + 1
         } else if(!this.uFlag && !event.ctrlKey){
-          d3.selectAll('.inbox').attr('class', 'outofBox')
+          d3.selectAll('.inbox.presentCircle').attr('class', 'outofBox presentCircle')
           console.log(event.target.id)
-          d3.selectAll('#' + event.target.id).attr('class', 'inbox')
+          d3.selectAll('#' + event.target.id).attr('class', 'inbox presentCircle')
           this.clicki = this.clicki + 1
         }
       })
       .on('mouseover', (event)=>{
         if(!event.ctrlKey){
           d3.select('#'+event.target.id).style('opacity', 0.1)
-          console.log(event.target.cx.baseVal.value)
+          // console.log(event.target.cx.baseVal.value)
           this.overlay = this.gCam.append('rect')
             .attr('x',()=>{
               return event.target.cx.baseVal.value-event.target.r.baseVal.value * Math.sqrt(0.5, 2)
@@ -425,7 +447,7 @@ export default {
       .attr("r", (d,i)=>{
           return  this.parentNodes[i].children.length * 1.25
       })
-      .attr("class", 'inbox')
+      .attr("class", 'inbox presentCircle')
       .attr("id", (d,i)=>{
         return 'A' + this.parentNodes[i].children[0].data.group
       })
@@ -449,7 +471,7 @@ export default {
       })
       .join('circle')
       .attr('r', 1.5)
-      .attr('class', 'floorplan')
+      .attr('class', 'inboxCircle presentCircle')
     
     this.onZoom = (event)=>{
       if ((event.type == 'brush')) 
@@ -613,5 +635,10 @@ circle {
 .outboxCircle{
   fill: rgb(255, 0, 0);
   opacity: 0.9;
+}
+.presentCircle{
+}
+.previousCircle{
+  display: none;
 }
 </style>
