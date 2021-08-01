@@ -303,6 +303,7 @@ export default {
   },
   mounted() {
     this.parentNodes = d3.hierarchy(this.sampleNode).children
+    console.log(this.parentNodes)
     this.scaleX = (k)=>{
       return d3.scaleLinear([0,this.width],[0,this.width * k])
     }
